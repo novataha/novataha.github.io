@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>چالش فکری ماتریکس</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #020617;
+        color: #f1f5f9;
+        font-family: Vazirmatn, Tahoma, "Segoe UI", sans-serif;
+        line-height: 1.5;
+        padding: 40px 16px;
+      }
+
+      main {
+        max-width: 560px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 32px;
+      }
+
+      header {
+        text-align: center;
+      }
+
+      .logo {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 16px;
+        border-radius: 16px;
+        background: rgba(45, 212, 191, 0.15);
+        color: #5eead4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1.2;
+        color: #fff;
+      }
+
+      .subtitle {
+        margin: 8px 0 0;
+        color: #94a3b8;
+      }
+
+      .stats {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .card {
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 16px;
+        padding: 20px;
+      }
+
+      .card-label {
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 8px;
+      }
+
+      .card-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .card-value.danger {
+        color: #fb7185;
+      }
+
+      .bar {
+        margin-top: 12px;
+        height: 6px;
+        border-radius: 999px;
+        background: #1e293b;
+        overflow: hidden;
+      }
+
+      .bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: #38bdf8;
+        transition: width 1s linear, background-color 0.3s;
+      }
+
+      .bar-fill.danger {
+        background: #fb7185;
+      }
+
+      .rule {
+        width: 100%;
+        margin: 0;
+        padding: 12px 16px;
+        text-align: center;
+        border-radius: 12px;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        background: rgba(251, 191, 36, 0.1);
+        color: #fef3c7;
+      }
+
+      .rule strong {
+        color: #fcd34d;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(3, auto);
+        gap: 12px;
+        padding: 20px;
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      }
+
+      .cell {
+        width: 80px;
+        height: 80px;
+        border: none;
+        border-radius: 12px;
+        background: #fff;
+        color: #0f172a;
+        font: inherit;
+        font-size: 28px;
+        font-weight: 700;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        transition: box-shadow 0.2s, transform 0.2s;
+      }
+
+      .cell:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.4);
+      }
+
+      .cell:not(:disabled):hover {
+        transform: translateY(-2px);
+      }
+
+      .cell:disabled {
+        background: #334155;
+        color: #99f6e4;
+        cursor: not-allowed;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font: inherit;
+        font-weight: 700;
+        color: #020617;
+        cursor: pointer;
+        transition: transform 0.15s, background-color 0.2s;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn-check {
+        background: #34d399;
+      }
+
+      .btn-check:hover {
+        background: #6ee7b7;
+      }
+
+      .btn-hint {
+        background: #fcd34d;
+      }
+
+      .btn-hint:hover {
+        background: #fde68a;
+      }
+
+      .btn-new {
+        background: #38bdf8;
+      }
+
+      .btn-new:hover {
+        background: #7dd3fc;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(2, 6, 23, 0.8);
+      }
+
+      .modal[hidden] {
+        display: none;
+      }
+
+      .modal-card {
+        width: 100%;
+        max-width: 360px;
+        padding: 24px;
+        text-align: center;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        animation: pop 0.2s ease-out;
+      }
+
+      .modal-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 16px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        font-weight: 800;
+      }
+
+      .modal[data-tone="success"] .modal-icon {
+        background: rgba(52, 211, 153, 0.15);
+        color: #6ee7b7;
+      }
+
+      .modal[data-tone="error"] .modal-icon {
+        background: rgba(251, 113, 133, 0.15);
+        color: #fda4af;
+      }
+
+      .modal[data-tone="warning"] .modal-icon {
+        background: rgba(251, 191, 36, 0.15);
+        color: #fcd34d;
+      }
+
+      .modal[data-tone="info"] .modal-icon {
+        background: rgba(56, 189, 248, 0.15);
+        color: #7dd3fc;
+      }
+
+      .modal-title {
+        margin: 0 0 8px;
+        font-size: 20px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .modal-body {
+        margin: 0 0 24px;
+        white-space: pre-line;
+        line-height: 1.5;
+        color: #cbd5e1;
+      }
+
+      .modal-ok {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 12px;
+        background: #2dd4bf;
+        color: #020617;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.15s;
+      }
+
+      .modal-ok:hover {
+        background: #5eead4;
+        transform: translateY(-1px);
+      }
+
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @media (max-width: 420px) {
+        .cell {
+          width: 64px;
+          height: 64px;
+          font-size: 24px;
+        }
+
+        .board {
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="logo" aria-hidden="true">&#9733;</div>
+        <h1>چالش فکری ماتریکس</h1>
+        <p class="subtitle">جدول را طوری پر کن که جمع هر سطر و ستون برابر هدف شود</p>
+      </header>
+
+      <section class="stats">
+        <div class="card">
+          <div class="card-label">امتیاز</div>
+          <div class="card-value" id="score">0</div>
+        </div>
+        <div class="card">
+          <div class="card-label">زمان باقی‌مانده</div>
+          <div class="card-value" id="time">120 ثانیه</div>
+          <div class="bar"><div class="bar-fill" id="bar"></div></div>
+        </div>
+      </section>
+
+      <p class="rule">
+        قانون: مجموع اعداد هر سطر و ستون باید برابر با <strong id="target">0</strong> باشد!
+      </p>
+
+      <div class="board" id="board" dir="ltr"></div>
+
+      <div class="actions">
+        <button type="button" class="btn btn-check" id="check">بررسی پاسخ</button>
+        <button type="button" class="btn btn-hint" id="hint">راهنما</button>
+        <button type="button" class="btn btn-new" id="new">بازی جدید</button>
+      </div>
+    </main>
+
+    <div class="modal" id="modal" data-tone="info" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true">
+        <div class="modal-icon" id="modal-icon" aria-hidden="true"></div>
+        <h2 class="modal-title" id="modal-title"></h2>
+        <p class="modal-body" id="modal-body"></p>
+        <button type="button" class="modal-ok" id="modal-ok">متوجه شدم</button>
+      </div>
+    </div>
+
+    <script>
+      const GRID = 3;
+      const TIME_LIMIT = 120;
+      const TONE_ICONS = { success: "\u2713", error: "\u2715", warning: "!", info: "i" };
+
+      const el = {
+        board: document.getElementById("board"),
+        score: document.getElementById("score"),
+        time: document.getElementById("time"),
+        bar: document.getElementById("bar"),
+        target: document.getElementById("target"),
+        check: document.getElementById("check"),
+        hint: document.getElementById("hint"),
+        newGame: document.getElementById("new"),
+        modal: document.getElementById("modal"),
+        modalIcon: document.getElementById("modal-icon"),
+        modalTitle: document.getElementById("modal-title"),
+        modalBody: document.getElementById("modal-body"),
+        modalOk: document.getElementById("modal-ok"),
+      };
+
+      const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+      let state = null;
+      let score = 0;
+      let timeLeft = TIME_LIMIT;
+      let timerId = null;
+      let modalAction = null;
+
+      function renderScore() {
+        el.score.textContent = String(score);
+      }
+
+      function renderTimer() {
+        el.time.textContent = `${timeLeft} ثانیه`;
+        el.time.classList.toggle("danger", timeLeft <= 20);
+        el.bar.classList.toggle("danger", timeLeft <= 20);
+        el.bar.style.width = `${(timeLeft / TIME_LIMIT) * 100}%`;
+      }
+
+      function stopTimer() {
+        clearInterval(timerId);
+        timerId = null;
+      }
+
+      function startTimer() {
+        stopTimer();
+        timeLeft = TIME_LIMIT;
+        renderTimer();
+        timerId = setInterval(() => {
+          timeLeft -= 1;
+          renderTimer();
+          if (timeLeft <= 0) {
+            stopTimer();
+            showModal("پایان زمان!", "زمان شما به اتمام رسید. دوباره تلاش کن!", "warning", newGame);
+          }
+        }, 1000);
+      }
+
+      function showModal(title, body, tone, action = null) {
+        modalAction = action;
+        el.modal.dataset.tone = tone;
+        el.modalIcon.textContent = TONE_ICONS[tone];
+        el.modalTitle.textContent = title;
+        el.modalBody.textContent = body;
+        el.modal.hidden = false;
+        el.modalOk.focus();
+      }
+
+      function closeModal() {
+        const action = modalAction;
+        modalAction = null;
+        el.modal.hidden = true;
+        if (action) action();
+      }
+
+      function newGame() {
+        const target = randInt(12, 25);
+        state = {
+          target,
+          cells: Array.from({ length: GRID * GRID }, () =>
+            Math.random() < 0.5
+              ? { value: String(randInt(1, 9)), fixed: true }
+              : { value: "", fixed: false },
+          ),
+        };
+        el.target.textContent = String(target);
+        el.board.replaceChildren(...buildBoard());
+        startTimer();
+      }
+
+      function buildBoard() {
+        return state.cells.map((cell, index) => {
+          const input = document.createElement("input");
+          input.type = "text";
+          input.inputMode = "numeric";
+          input.maxLength = 2;
+          input.className = "cell";
+          input.setAttribute("aria-label", `خانه ${index + 1}`);
+          input.value = cell.value;
+          input.disabled = cell.fixed;
+          input.addEventListener("input", () => {
+            const digits = input.value.replace(/\D/g, "").slice(0, 2);
+            input.value = digits;
+            cell.value = digits;
+          });
+          return input;
+        });
+      }
+
+      function checkSolution() {
+        const values = state.cells.map((cell) => cell.value.trim());
+        if (values.some((v) => !/^\d+$/.test(v))) {
+          showModal("خطای ورودی", "لطفاً همه خانه‌ها را با اعداد معتبر پر کنید!", "warning");
+          return;
+        }
+
+        const nums = values.map(Number);
+        const rowSum = (r) => nums[r * GRID] + nums[r * GRID + 1] + nums[r * GRID + 2];
+        const colSum = (c) => nums[c] + nums[c + GRID] + nums[c + GRID * 2];
+
+        for (let r = 0; r < GRID; r++) {
+          if (rowSum(r) !== state.target) {
+            showModal("خطا", `مجموع اعداد سطر ${r + 1} اشتباه است!`, "error");
+            return;
+          }
+        }
+        for (let c = 0; c < GRID; c++) {
+          if (colSum(c) !== state.target) {
+            showModal("خطا", `مجموع اعداد ستون ${c + 1} اشتباه است!`, "error");
+            return;
+          }
+        }
+
+        const earned = 10 + Math.floor(timeLeft / 2);
+        stopTimer();
+        score += earned;
+        renderScore();
+        showModal(
+          "آفرین رفیق!",
+          `معما با موفقیت حل شد!\nامتیاز کسب شده این مرحله: ${earned}`,
+          "success",
+          newGame,
+        );
+      }
+
+      function giveHint() {
+        score = Math.max(0, score - 5);
+        renderScore();
+        showModal(
+          "راهنمای ماتریکس",
+          `یادآوری: هدف این است که جمع هر سطر و ستون عدد ${state.target} شود. به اعداد ثابت جدول دقت کن!`,
+          "info",
+        );
+      }
+
+      el.check.addEventListener("click", checkSolution);
+      el.hint.addEventListener("click", giveHint);
+      el.newGame.addEventListener("click", newGame);
+      el.modalOk.addEventListener("click", closeModal);
+
+      renderScore();
+      newGame();
+    </script>
+  </body>
+</html>
